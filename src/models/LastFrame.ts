@@ -76,6 +76,8 @@ export class LastFrame implements iFrame {
       return TOTAL_PINS;
     } else if (this.hasRoll1() && this.hasRoll2() && this.hasStrike()) {
       return TOTAL_PINS;
+    } else if (!this.hasStrike() && this.hasRoll1() && this.hasRoll2()) {
+      return 0;
     }
     return TOTAL_PINS - this.getRoll1() - this.getRoll2();
   }

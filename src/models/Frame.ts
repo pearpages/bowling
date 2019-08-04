@@ -1,24 +1,23 @@
-export const TOTAL_PINS = 10;
-export const ERROR_MESSAGE = {
-  ALL_ROLLS: "All rolls populated",
-  COMPLETE: "Frame is complete",
-  WRONG_VALUE: "Wrong value",
-  STRIKE: "Already a strike",
-  MISSING_SPARE_ROLL: "Missing Spare Roll",
-  MISSING_STRIKE_ROLLS: "Missing Strike Rolls"
-};
+import { TOTAL_PINS, iFrame, ERROR_MESSAGE, isValueCorrect } from "./models";
 
-export function isValueCorrect(value: number, currentPins: number): boolean {
-  return (
-    value >= 0 && currentPins <= TOTAL_PINS && value + currentPins <= TOTAL_PINS
-  );
-}
-
-export class Frame {
+export class Frame implements iFrame {
   private roll1!: number;
   private roll2!: number;
+  private nextFrame!: iFrame;
+  private previousFrame!: iFrame;
 
-  constructor(private nextFrame?: Frame) {}
+  setNextFrame(frame: iFrame) {
+    this.nextFrame = frame;
+  }
+
+  setPreviousFrame(frame: iFrame) {
+    this.previousFrame = frame;
+  }
+
+  setSiblingFrames(previous: iFrame, next: iFrame) {
+    this.previousFrame = previous;
+    this.nextFrame = next;
+  }
 
   getRoll1(): number {
     return this.roll1 || 0;
@@ -28,12 +27,32 @@ export class Frame {
     return this.roll2 || 0;
   }
 
+  getHtmlRoll1(): string {
+    if (this.roll1 === undefined || this.hasStrike()) {
+      return "";
+    }
+    return this.roll1 + "";
+  }
+  getHtmlRoll2(): string {
+    if (this.hasStrike()) {
+      return "X";
+    } else if (this.roll2 === undefined) {
+      return "";
+    } else if (this.isSpare()) {
+      return "/";
+    } else return this.roll2 + "";
+  }
+
   hasRoll1(): boolean {
     return this.roll1 !== undefined;
   }
 
   hasRoll2(): boolean {
     return this.roll2 !== undefined;
+  }
+
+  getPinsLeft(): number {
+    return TOTAL_PINS - this.getRoll1();
   }
 
   getNextRoll(): number {
@@ -51,7 +70,7 @@ export class Frame {
   }
 
   addRoll(value: number): void {
-    if (this.isStrike()) {
+    if (this.hasStrike()) {
       throw new Error(ERROR_MESSAGE.STRIKE);
     } else if (this.hasAllRolls()) {
       throw new Error(ERROR_MESSAGE.ALL_ROLLS);
@@ -67,26 +86,30 @@ export class Frame {
   }
 
   getScore(): number {
+    let previousFrameScore = 0;
+    if (!!this.previousFrame) {
+      previousFrameScore = this.previousFrame.getScore();
+    }
     if (this.isSpare()) {
       if (this.hasSpareRoll()) {
-        return TOTAL_PINS + this.getSpareRoll();
+        return previousFrameScore + TOTAL_PINS + this.getSpareRoll();
       }
       throw new Error(ERROR_MESSAGE.MISSING_SPARE_ROLL);
-    } else if (this.isStrike()) {
+    } else if (this.hasStrike()) {
       if (this.hasStrikeRolls()) {
-        return TOTAL_PINS + this.getStrikeRolls();
+        return previousFrameScore + TOTAL_PINS + this.getStrikeRolls();
       }
       throw new Error(ERROR_MESSAGE.MISSING_STRIKE_ROLLS);
     }
-    return this.getRoll1() + this.getRoll2();
+    return previousFrameScore + this.getRoll1() + this.getRoll2();
   }
 
-  isStrike(): boolean {
+  hasStrike(): boolean {
     return this.getRoll1() === TOTAL_PINS;
   }
 
   isSpare(): boolean {
-    return !this.isStrike() && this.getRoll1() + this.getRoll2() === 10;
+    return !this.hasStrike() && this.getRoll1() + this.getRoll2() === 10;
   }
 
   hasAllRolls(): boolean {
@@ -108,7 +131,7 @@ export class Frame {
     if (!this.nextFrame) {
       return false;
     }
-    if (this.nextFrame.isStrike()) {
+    if (this.nextFrame.hasStrike()) {
       return this.nextFrame.hasRoll1() && this.nextFrame.hasNextRoll();
     }
     return this.nextFrame.hasRoll1() && this.nextFrame.hasRoll2();
@@ -116,7 +139,7 @@ export class Frame {
 
   getStrikeRolls(): number {
     if (this.nextFrame) {
-      if (this.nextFrame.isStrike()) {
+      if (this.nextFrame.hasStrike()) {
         return TOTAL_PINS + this.nextFrame.getNextRoll();
       }
       return this.nextFrame.getRoll1() + this.nextFrame.getRoll2();
@@ -124,11 +147,15 @@ export class Frame {
     return 0;
   }
 
-  isCompleted(): boolean {
+  canAddRoll(): boolean {
+    return !this.hasAllRolls() && !this.hasStrike();
+  }
+
+  hasScoreReady(): boolean {
     return (
       (this.hasAllRolls() && !this.isSpare()) ||
       (this.isSpare() && this.hasSpareRoll()) ||
-      (this.isStrike() && this.hasStrikeRolls())
+      (this.hasStrike() && this.hasStrikeRolls())
     );
   }
 }

@@ -1,4 +1,5 @@
-import { Frame, ERROR_MESSAGE, TOTAL_PINS } from "./Frame";
+import { ERROR_MESSAGE, TOTAL_PINS } from "./models";
+import { Frame } from "./Frame";
 
 describe("Test Frame", () => {
   describe("Should tell you whether is strike or not", () => {
@@ -7,15 +8,15 @@ describe("Test Frame", () => {
       frame = new Frame();
     });
     it("Should not be a strike for a new frame", () => {
-      expect(frame.isStrike()).toBe(false);
+      expect(frame.hasStrike()).toBe(false);
     });
     it("Should not be a strike if the first roll is not the total pins", () => {
       frame.addRoll(1);
-      expect(frame.isStrike()).toBe(false);
+      expect(frame.hasStrike()).toBe(false);
     });
     it("Should be a strike if the first roll is the total pins", () => {
       frame.addRoll(TOTAL_PINS);
-      expect(frame.isStrike()).toBe(true);
+      expect(frame.hasStrike()).toBe(true);
     });
   });
   describe("Should tell you wheter is a spare or not", () => {
@@ -76,50 +77,54 @@ describe("Test Frame", () => {
     let nextFrame: Frame;
     beforeEach(() => {
       nextFrame = new Frame();
-      frame = new Frame(nextFrame);
+      frame = new Frame();
+      frame.setNextFrame(nextFrame);
     });
     it("Should not be completed when it is just created", () => {
-      expect(frame.isCompleted()).toBe(false);
+      expect(frame.hasScoreReady()).toBe(false);
     });
     it("is not completed when we only have one result that is not a strike", () => {
       frame.addRoll(4);
-      expect(frame.isCompleted()).toBe(false);
+      expect(frame.hasScoreReady()).toBe(false);
     });
     it("is completed when we have two result that are not a spare", () => {
       frame.addRoll(3);
       frame.addRoll(3);
-      expect(frame.isCompleted()).toBe(true);
+      expect(frame.hasScoreReady()).toBe(true);
     });
     it("is not completed when we have a spare but not the next roll", () => {
       frame.addRoll(1);
       frame.addRoll(9);
-      expect(frame.isCompleted()).toBe(false);
+      expect(frame.hasScoreReady()).toBe(false);
     });
     it("is not completed when we have a strike but not the next two rolls", () => {
       frame.addRoll(10);
-      expect(frame.isCompleted()).toBe(false);
+      expect(frame.hasScoreReady()).toBe(false);
     });
     it("is completed when we have a spare and the next roll", () => {
       frame.addRoll(1);
       frame.addRoll(9);
       nextFrame.addRoll(3);
-      expect(frame.isCompleted()).toBe(true);
+      expect(frame.hasScoreReady()).toBe(true);
     });
     it("is not completed when we have a strike but not the next two rolls", () => {
       frame.addRoll(10);
       nextFrame.addRoll(4);
       nextFrame.addRoll(1);
-      expect(frame.isCompleted()).toBe(true);
+      expect(frame.hasScoreReady()).toBe(true);
     });
   });
   describe("Should get the score", () => {
     let frame: Frame;
-    let nextFrame: Frame;
-    let nextNextFrame: Frame;
+    let frame2: Frame;
+    let frame3: Frame;
     beforeEach(() => {
-      nextNextFrame = new Frame();
-      nextFrame = new Frame(nextNextFrame);
-      frame = new Frame(nextFrame);
+      frame3 = new Frame();
+      frame2 = new Frame();
+      frame = new Frame();
+      frame.setNextFrame(frame2);
+      frame2.setSiblingFrames(frame, frame3);
+      frame3.setPreviousFrame(frame2);
     });
     it("Should have 0 as default score", () => {
       expect(frame.getScore()).toBe(0);
@@ -143,7 +148,7 @@ describe("Test Frame", () => {
     it("Should return the score of a spare bonus", () => {
       frame.addRoll(1);
       frame.addRoll(9);
-      nextFrame.addRoll(10);
+      frame2.addRoll(10);
       frame.getScore();
       expect(frame.getScore()).toBe(20);
     });
@@ -158,15 +163,15 @@ describe("Test Frame", () => {
     });
     it("Should get the score of a strike when is completed", () => {
       frame.addRoll(10);
-      nextFrame.addRoll(1);
-      nextFrame.addRoll(2);
+      frame2.addRoll(1);
+      frame2.addRoll(2);
       expect(frame.getScore()).toBe(13);
       frame.getScore();
     });
     it("Shold get the max frame punctuation", () => {
       frame.addRoll(10);
-      nextFrame.addRoll(10);
-      nextNextFrame.addRoll(10);
+      frame2.addRoll(10);
+      frame3.addRoll(10);
       expect(frame.getScore()).toBe(30);
     });
   });

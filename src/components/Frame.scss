@@ -1,0 +1,64 @@
+$squareSize: 60px;
+
+@mixin text {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+$border: 1px solid #666;
+
+.frame {
+  width: $squareSize;
+  height: $squareSize;
+  display: flex;
+  flex-direction: column;
+  border: $border;
+  font-size: 12px;
+  text-align: center;
+  &__header {
+    background-color: #666;
+    color: white;
+    @include text;
+  }
+  &__body {
+    flex-grow: 1;
+  }
+
+  &--active {
+    background-color: #ccc;
+  }
+  &--last {
+    .rolls {
+      &__roll1,
+      &__roll2,
+      &__roll3 {
+        width: 100%;
+        @include text;
+      }
+      &__roll2,
+      &__roll3 {
+        border-left: $border;
+        border-bottom: $border;
+      }
+    }
+  }
+  .rolls {
+    display: flex;
+    width: 100%;
+    height: 50%;
+    &__roll1,
+    &__roll2 {
+      width: 100%;
+      @include text;
+    }
+    &__roll2 {
+      border-left: $border;
+      border-bottom: $border;
+    }
+  }
+  .score {
+    height: 50%;
+    @include text;
+  }
+}

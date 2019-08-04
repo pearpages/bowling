@@ -1,0 +1,12 @@
+.pins {
+  padding: 0 20px;
+  margin-left: 100px;
+  position: fixed;
+  .pin-down {
+    margin-top: 15px;
+    text-align: center;
+    width: 100px;
+    height: 30px;
+    cursor: pointer;
+  }
+}

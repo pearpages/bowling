@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/bowling/static/css/main.8e9aaf29.chunk.css",
+    "main.js": "/bowling/static/js/main.b9251103.chunk.js",
+    "main.js.map": "/bowling/static/js/main.b9251103.chunk.js.map",
+    "runtime~main.js": "/bowling/static/js/runtime~main.ab5f3ffc.js",
+    "runtime~main.js.map": "/bowling/static/js/runtime~main.ab5f3ffc.js.map",
+    "static/js/2.3d8dcad6.chunk.js": "/bowling/static/js/2.3d8dcad6.chunk.js",
+    "static/js/2.3d8dcad6.chunk.js.map": "/bowling/static/js/2.3d8dcad6.chunk.js.map",
+    "index.html": "/bowling/index.html",
+    "precache-manifest.330db38196be2ade516138a194b78e3d.js": "/bowling/precache-manifest.330db38196be2ade516138a194b78e3d.js",
+    "service-worker.js": "/bowling/service-worker.js",
+    "static/css/main.8e9aaf29.chunk.css.map": "/bowling/static/css/main.8e9aaf29.chunk.css.map"
+  }
+}

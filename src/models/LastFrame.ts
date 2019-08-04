@@ -54,7 +54,7 @@ export class LastFrame implements iFrame {
     } else if (this.roll3 === TOTAL_PINS) {
       return "X";
     }
-    return this.roll2 + "";
+    return this.roll3 + "";
   }
 
   hasRoll1(): boolean {

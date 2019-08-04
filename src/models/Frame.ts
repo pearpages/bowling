@@ -1,30 +1,20 @@
-import { TOTAL_PINS, iFrame, ERROR_MESSAGE, isValueCorrect } from "./models";
+import { AbstractFrame } from "./AbstractFrame";
+import { TOTAL_PINS, ERROR_MESSAGE, isValueCorrect } from "./models";
 
-export class Frame implements iFrame {
-  private roll1!: number;
-  private roll2!: number;
-  private nextFrame!: iFrame;
-  private previousFrame!: iFrame;
+export class Frame extends AbstractFrame {
+  protected nextFrame!: AbstractFrame;
 
-  setNextFrame(frame: iFrame) {
+  setNextFrame(frame: AbstractFrame) {
     this.nextFrame = frame;
   }
 
-  setPreviousFrame(frame: iFrame) {
-    this.previousFrame = frame;
-  }
-
-  setSiblingFrames(previous: iFrame, next: iFrame) {
+  setSiblingFrames(previous: AbstractFrame, next: AbstractFrame) {
     this.previousFrame = previous;
     this.nextFrame = next;
   }
 
-  getRoll1(): number {
-    return this.roll1 || 0;
-  }
-
-  getRoll2(): number {
-    return this.roll2 || 0;
+  hasAllRolls(): boolean {
+    return this.roll1 !== undefined && this.roll2 !== undefined;
   }
 
   getHtmlRoll1(): string {
@@ -33,36 +23,29 @@ export class Frame implements iFrame {
     }
     return this.roll1 + "";
   }
+
   getHtmlRoll2(): string {
     if (this.hasStrike()) {
       return "X";
     } else if (this.roll2 === undefined) {
       return "";
-    } else if (this.isSpare()) {
+    } else if (this.hasSpare()) {
       return "/";
     } else return this.roll2 + "";
-  }
-
-  hasRoll1(): boolean {
-    return this.roll1 !== undefined;
-  }
-
-  hasRoll2(): boolean {
-    return this.roll2 !== undefined;
   }
 
   getPinsLeft(): number {
     return TOTAL_PINS - this.getRoll1();
   }
 
-  getNextRoll(): number {
+  getFirstBonusRoll(): number {
     if (this.nextFrame) {
       return this.nextFrame.getRoll1();
     }
     return 0;
   }
 
-  hasNextRoll(): boolean {
+  hasFirstBonusRoll(): boolean {
     if (this.nextFrame) {
       return this.nextFrame.hasRoll1();
     }
@@ -85,35 +68,8 @@ export class Frame implements iFrame {
     }
   }
 
-  getScore(): number {
-    let previousFrameScore = 0;
-    if (!!this.previousFrame) {
-      previousFrameScore = this.previousFrame.getScore();
-    }
-    if (this.isSpare()) {
-      if (this.hasSpareRoll()) {
-        return previousFrameScore + TOTAL_PINS + this.getSpareRoll();
-      }
-      throw new Error(ERROR_MESSAGE.MISSING_SPARE_ROLL);
-    } else if (this.hasStrike()) {
-      if (this.hasStrikeRolls()) {
-        return previousFrameScore + TOTAL_PINS + this.getStrikeRolls();
-      }
-      throw new Error(ERROR_MESSAGE.MISSING_STRIKE_ROLLS);
-    }
-    return previousFrameScore + this.getRoll1() + this.getRoll2();
-  }
-
   hasStrike(): boolean {
     return this.getRoll1() === TOTAL_PINS;
-  }
-
-  isSpare(): boolean {
-    return !this.hasStrike() && this.getRoll1() + this.getRoll2() === 10;
-  }
-
-  hasAllRolls(): boolean {
-    return this.roll1 !== undefined && this.roll2 !== undefined;
   }
 
   hasSpareRoll(): boolean {
@@ -132,19 +88,19 @@ export class Frame implements iFrame {
       return false;
     }
     if (this.nextFrame.hasStrike()) {
-      return this.nextFrame.hasRoll1() && this.nextFrame.hasNextRoll();
+      return this.nextFrame.hasRoll1() && this.nextFrame.hasFirstBonusRoll();
     }
     return this.nextFrame.hasRoll1() && this.nextFrame.hasRoll2();
   }
 
   getStrikeRolls(): number {
-    if (this.nextFrame) {
+    if (this.hasStrikeRolls()) {
       if (this.nextFrame.hasStrike()) {
-        return TOTAL_PINS + this.nextFrame.getNextRoll();
+        return TOTAL_PINS + this.nextFrame.getFirstBonusRoll();
       }
       return this.nextFrame.getRoll1() + this.nextFrame.getRoll2();
     }
-    return 0;
+    throw new Error(ERROR_MESSAGE.MISSING_STRIKE_ROLLS);
   }
 
   canAddRoll(): boolean {
@@ -153,8 +109,8 @@ export class Frame implements iFrame {
 
   hasScoreReady(): boolean {
     return (
-      (this.hasAllRolls() && !this.isSpare()) ||
-      (this.isSpare() && this.hasSpareRoll()) ||
+      (this.hasAllRolls() && !this.hasSpare()) ||
+      (this.hasSpare() && this.hasSpareRoll()) ||
       (this.hasStrike() && this.hasStrikeRolls())
     );
   }

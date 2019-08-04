@@ -1,31 +1,29 @@
-import {
-  iFrame,
-  TOTAL_PINS,
-  ERROR_MESSAGE,
-  isValueCorrect,
-  isInRange
-} from "./models";
+import { AbstractFrame } from "./AbstractFrame";
+import { TOTAL_PINS, ERROR_MESSAGE, isValueCorrect, isInRange } from "./models";
 
-export class LastFrame implements iFrame {
-  private roll1!: number;
-  private roll2!: number;
-  private roll3!: number;
-  private previousFrame!: iFrame;
+export class LastFrame extends AbstractFrame {
+  protected roll3!: number;
 
-  setPreviousFrame(frame: iFrame) {
-    this.previousFrame = frame;
-  }
-
-  getRoll1(): number {
-    return this.roll1 || 0;
-  }
-
-  getRoll2(): number {
-    return this.roll2 || 0;
+  hasRoll3(): boolean {
+    return this.roll3 !== undefined;
   }
 
   getRoll3(): number {
     return this.roll3 || 0;
+  }
+
+  canAdd3rRoll(): boolean {
+    return !this.hasRoll3() && (this.hasSpare() || this.hasStrike());
+  }
+
+  isValueCorrect(value: number, currentPins: number): boolean {
+    if (this.getRoll1() === TOTAL_PINS) {
+      return isInRange(value);
+    }
+    if (!this.hasRoll2()) {
+      return isValueCorrect(value, currentPins);
+    }
+    return isInRange(value);
   }
 
   getHtmlRoll1(): string {
@@ -57,59 +55,27 @@ export class LastFrame implements iFrame {
     return this.roll3 + "";
   }
 
-  hasRoll1(): boolean {
-    return this.roll1 !== undefined;
-  }
-
-  hasRoll2(): boolean {
-    return this.roll2 !== undefined;
-  }
-
-  hasRoll3(): boolean {
-    return this.roll3 !== undefined;
-  }
-
   getPinsLeft(): number {
-    if (this.hasRoll3()) {
-      return 0;
-    } else if (this.hasSpare()) {
+    if (!this.hasRoll1()) {
       return TOTAL_PINS;
-    } else if (this.hasRoll1() && this.hasRoll2() && this.hasStrike()) {
+    } else if (!this.hasRoll2() && !this.hasStrike()) {
+      return TOTAL_PINS - this.getRoll1();
+    } else if (!this.hasRoll2() && this.hasStrike()) {
       return TOTAL_PINS;
-    } else if (!this.hasStrike() && this.hasRoll1() && this.hasRoll2()) {
+    } else if (!this.hasRoll3() && this.hasSpare()) {
+      return TOTAL_PINS;
+    } else if (!this.hasRoll3() && this.getRoll2() === TOTAL_PINS) {
+      return TOTAL_PINS;
+    } else if (!this.hasRoll3() && this.getRoll2() !== TOTAL_PINS) {
+      return TOTAL_PINS - this.getRoll2();
+    } else {
       return 0;
     }
-    return TOTAL_PINS - this.getRoll1() - this.getRoll2();
   }
 
-  hasSpare(): boolean {
-    return this.getRoll1() + this.getRoll2() === TOTAL_PINS;
-  }
+  getFirstBonusRoll = () => this.getRoll3();
 
-  hasStrike(): boolean {
-    return this.getRoll1() === TOTAL_PINS || this.getRoll2() === TOTAL_PINS;
-  }
-
-  canAddRoll(): boolean {
-    if (!this.hasRoll1() || !this.hasRoll2()) {
-      return true;
-    }
-    return this.canAdd3rRoll();
-  }
-
-  canAdd3rRoll(): boolean {
-    return !this.hasRoll3() && (this.hasSpare() || this.hasStrike());
-  }
-
-  isValueCorrect(value: number, currentPins: number): boolean {
-    if (this.getRoll1() === TOTAL_PINS) {
-      return isInRange(value);
-    }
-    if (!this.hasRoll2()) {
-      return isValueCorrect(value, currentPins);
-    }
-    return isInRange(value);
-  }
+  hasFirstBonusRoll = () => this.hasRoll3();
 
   addRoll(value: number): void {
     if (!this.canAddRoll()) {
@@ -127,23 +93,8 @@ export class LastFrame implements iFrame {
     }
   }
 
-  getScore(): number {
-    let previousFrameScore = 0;
-    if (!!this.previousFrame) {
-      previousFrameScore = this.previousFrame.getScore();
-    }
-    if (this.hasSpare()) {
-      if (this.hasSpareRoll()) {
-        return previousFrameScore + TOTAL_PINS + this.getSpareRoll();
-      }
-      throw new Error(ERROR_MESSAGE.MISSING_SPARE_ROLL);
-    } else if (this.hasStrike()) {
-      if (this.hasStrikeRolls()) {
-        return previousFrameScore + TOTAL_PINS + this.getStrikeRolls();
-      }
-      throw new Error(ERROR_MESSAGE.MISSING_STRIKE_ROLLS);
-    }
-    return previousFrameScore + this.getRoll1() + this.getRoll2();
+  hasStrike(): boolean {
+    return this.getRoll1() === TOTAL_PINS || this.getRoll2() === TOTAL_PINS;
   }
 
   hasSpareRoll(): boolean {
@@ -162,15 +113,14 @@ export class LastFrame implements iFrame {
     return this.getRoll2() + this.getRoll3();
   }
 
-  isCompleted(): boolean {
-    return !this.canAddRoll();
+  canAddRoll(): boolean {
+    if (!this.hasRoll1() || !this.hasRoll2()) {
+      return true;
+    }
+    return this.canAdd3rRoll();
   }
 
   hasScoreReady(): boolean {
     return !this.canAddRoll();
   }
-
-  hasNextRoll = () => this.hasRoll3();
-
-  getNextRoll = () => this.getRoll3();
 }

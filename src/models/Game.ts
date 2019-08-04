@@ -1,4 +1,4 @@
-import { TOTAL_PINS, iFrame } from "./models";
+import { TOTAL_PINS, FrameInterface } from "./models";
 import { Frame } from "./Frame";
 import { LastFrame } from "./LastFrame";
 
@@ -7,7 +7,7 @@ export function roll(): number {
 }
 
 export class Game {
-  frames: Array<iFrame>;
+  frames: Array<FrameInterface>;
   currentFrameIndex = 0;
 
   constructor() {
@@ -52,7 +52,7 @@ export class Game {
     }
   }
 
-  getCurrentFrame(): iFrame {
+  getCurrentFrame(): FrameInterface {
     return this.frames[this.currentFrameIndex];
   }
 
@@ -60,7 +60,7 @@ export class Game {
     return this.currentFrameIndex;
   }
 
-  getFrames(): iFrame[] {
+  getFrames(): FrameInterface[] {
     return this.frames;
   }
 

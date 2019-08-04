@@ -1,7 +1,6 @@
 import React from "react";
 
 import "./Frame.scss";
-// import { Frame as FrameModel } from "../models/Frame";
 
 function getCSSclasses(options: {
   isActive?: boolean;

@@ -2,6 +2,33 @@ import { ERROR_MESSAGE, TOTAL_PINS } from "./models";
 import { Frame } from "./Frame";
 
 describe("Test Frame", () => {
+  describe("Should give you a string representation of the frame rolls", () => {
+    let frame: Frame;
+    beforeEach(() => {
+      frame = new Frame();
+    });
+    it("Should give an empty sring when just created", () => {
+      expect(frame.getHtmlRoll1()).toBe("");
+      expect(frame.getHtmlRoll2()).toBe("");
+    });
+    it("Should give a strike when there is a strike", () => {
+      frame.addRoll(TOTAL_PINS);
+      expect(frame.getHtmlRoll1()).toBe("");
+      expect(frame.getHtmlRoll2()).toBe("X");
+    });
+    it("Should give a spare when there is a spare", () => {
+      frame.addRoll(1);
+      frame.addRoll(TOTAL_PINS - 1);
+      expect(frame.getHtmlRoll1()).toBe("1");
+      expect(frame.getHtmlRoll2()).toBe("/");
+    });
+    it("Should give a non spare/strike combination", () => {
+      frame.addRoll(2);
+      frame.addRoll(3);
+      expect(frame.getHtmlRoll1()).toBe("2");
+      expect(frame.getHtmlRoll2()).toBe("3");
+    });
+  });
   describe("Should tell you whether is strike or not", () => {
     let frame: Frame;
     beforeEach(() => {
@@ -25,22 +52,22 @@ describe("Test Frame", () => {
       frame = new Frame();
     });
     it("Should not be a spare with an empty frame", () => {
-      expect(frame.isSpare()).toBe(false);
+      expect(frame.hasSpare()).toBe(false);
     });
     it("Should not be a spare when is a strike", () => {
       frame.addRoll(10);
-      expect(frame.isSpare()).toBe(false);
+      expect(frame.hasSpare()).toBe(false);
     });
     it("Should not be a spare when there is only one reoll", () => {
       frame.addRoll(1);
-      expect(frame.isSpare()).toBe(false);
+      expect(frame.hasSpare()).toBe(false);
     });
     it("Should be a spare when the two rolls sum up the total spins", () => {
       const roll1 = 1;
       const roll2 = TOTAL_PINS - roll1;
       frame.addRoll(roll1);
       frame.addRoll(roll2);
-      expect(frame.isSpare()).toBe(true);
+      expect(frame.hasSpare()).toBe(true);
     });
   });
   describe("Should add a value", () => {
@@ -112,6 +139,24 @@ describe("Test Frame", () => {
       nextFrame.addRoll(4);
       nextFrame.addRoll(1);
       expect(frame.hasScoreReady()).toBe(true);
+    });
+  });
+  describe("Can add roll", () => {
+    let frame: Frame;
+    beforeEach(() => {
+      frame = new Frame();
+    });
+    it("Should be able to add a roll when is brand new", () => {
+      expect(frame.canAddRoll()).toBe(true);
+    });
+    it("Should not be able to add roll if is a strike", () => {
+      frame.addRoll(TOTAL_PINS);
+      expect(frame.canAddRoll()).toBe(false);
+    });
+    it("should not be able to add a roll if it is already full", () => {
+      frame.addRoll(1);
+      frame.addRoll(TOTAL_PINS - 1);
+      expect(frame.canAddRoll()).toBe(false);
     });
   });
   describe("Should get the score", () => {

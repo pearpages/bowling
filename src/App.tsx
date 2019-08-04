@@ -1,13 +1,11 @@
 import React, { Component } from "react";
 
 import "./App.scss";
-import { Frame } from "./components/Frame";
-import { Pins } from "./components/Pins";
-import { Game } from "./models/Game";
-import { iFrame } from "./models/models";
+import { Frame, Pins } from "./components";
+import { Game, FrameInterface } from "./models";
 
 interface State {
-  frames: iFrame[];
+  frames: FrameInterface[];
   game: Game;
 }
 
@@ -26,7 +24,7 @@ export class App extends Component<{}, State> {
     this.state = getNewGame();
   }
 
-  get currentFrame(): iFrame {
+  get currentFrame(): FrameInterface {
     return this.state.game.getCurrentFrame();
   }
 
@@ -44,7 +42,7 @@ export class App extends Component<{}, State> {
       <>
         <div className="bowling">
           <div className="frames">
-            {this.state.frames.map((frame: iFrame, key: number) => (
+            {this.state.frames.map((frame: FrameInterface, key: number) => (
               <Frame
                 key={key + 1}
                 id={key + 1}

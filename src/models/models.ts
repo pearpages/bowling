@@ -8,7 +8,7 @@ export const ERROR_MESSAGE = {
   MISSING_STRIKE_ROLLS: "Missing Strike Rolls"
 };
 
-export interface iFrame {
+export interface FrameInterface {
   getHtmlRoll1: () => string;
   getHtmlRoll2: () => string;
   hasScoreReady: () => boolean;
@@ -23,10 +23,9 @@ export interface iFrame {
   getHtmlRoll3?: () => string;
   hasRoll3?: () => boolean;
   hasStrike: () => boolean;
-  hasNextRoll: () => boolean;
-  getNextRoll: () => number;
+  hasFirstBonusRoll: () => boolean;
+  getFirstBonusRoll: () => number;
 }
-
 export function isValueCorrect(value: number, currentPins: number): boolean {
   return isInRange(value) && value + currentPins <= TOTAL_PINS;
 }
